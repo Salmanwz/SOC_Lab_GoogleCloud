@@ -42,3 +42,15 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+
+# Secrets / local environment — NEVER commit the real .env
+.env
+.env.*.local
+# ...but DO keep the committed template:
+!.env.example
+
+# Ansible vault / generated key material
+*.vault
+*.pem
+*_key
+*_key.pub

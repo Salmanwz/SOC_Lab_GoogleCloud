@@ -1,0 +1,31 @@
+# =====================================================================
+#  SOC Lab — non-secret infrastructure config.
+#  Copy to terraform.tfvars (gitignored) and set the placeholders.
+#
+#    cp terraform.tfvars.example terraform.tfvars   &&   edit terraform.tfvars
+# =====================================================================
+
+# --- GCP project / location ---
+project_id = "soc-lab-<unique>"      # your GCP project id
+region     = "us-central1"
+zone       = "us-central1-a"
+
+# --- Remote state (also wired in backend.tf at scaffold time) ---
+state_bucket = "soc-lab-tfstate-v1"
+
+# --- Network ---
+vpc_cidr = "10.10.0.0/16"
+
+# --- Active Directory (Samba AD DC) ---
+ad_domain  = "corp.soclab.local"
+ad_netbios = "CORP"
+
+# --- Naming / tagging ---
+name_prefix = "soc-lab"
+labels = {
+  env = "lab"
+}
+
+# --- Inbound allowlist (AUP-safe) ---
+# Your public /32 from: curl -s ifconfig.me
+admin_source_cidr = "x.x.x.x/32"
