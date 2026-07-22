@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get -o DPkg::Lock::Timeout=180 update -y
+apt-get -o DPkg::Lock::Timeout=180 install -y docker.io curl gnupg apt-transport-https
+
+# --- DVWA (deliberately vulnerable web app) ---
+systemctl enable --now docker
+# `|| true` so a reboot (container name already exists) doesn't fail the script.
+docker run -d --name dvwa --restart unless-stopped -p 80:80 vulnerables/web-dvwa || true
+
+# --- Wazuh agent, auto-enrolling to the manager ---
+if [ ! -f /var/ossec/etc/ossec.conf ]; then
+  curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --dearmor -o /usr/share/keyrings/wazuh.gpg
+  echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
+    >/etc/apt/sources.list.d/wazuh.list
+  apt-get -o DPkg::Lock::Timeout=180 update -y
+  # WAZUH_MANAGER points the agent at the manager for auto-enrollment (port 1515).
+  WAZUH_MANAGER="${manager_ip}" apt-get -o DPkg::Lock::Timeout=180 install -y wazuh-agent
+  systemctl daemon-reload
+  systemctl enable --now wazuh-agent
+fi
