@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
+
+# Startup scripts run on every boot — don't reinstall if Wazuh is already here.
+if [ -f /var/ossec/etc/ossec.conf ]; then
+  echo "Wazuh already installed; skipping."
+  exit 0
+fi
+
+# The Wazuh indexer (OpenSearch) needs a raised mmap count.
+sysctl -w vm.max_map_count=262144
+echo 'vm.max_map_count=262144' >/etc/sysctl.d/99-wazuh.conf
+
+apt-get -o DPkg::Lock::Timeout=180 update -y
+apt-get -o DPkg::Lock::Timeout=180 install -y curl tar
+
+# Official all-in-one install (manager + indexer + dashboard on one host).
+cd /root
+curl -sO "https://packages.wazuh.com/${wazuh_version}/wazuh-install.sh"
+bash wazuh-install.sh -a -i 2>&1 | tee /root/wazuh-install.log
+
+echo "Wazuh install finished. Credentials in /root/wazuh-install-files.tar"
