@@ -33,7 +33,8 @@ resource "google_compute_instance" "dvwa" {
   # Referencing the manager's IP creates an implicit dependency, so the SOC
   # server is built first and its address is baked into the agent config.
   metadata_startup_script = templatefile("${path.module}/scripts/dvwa-agent.sh.tftpl", {
-    manager_ip = google_compute_instance.soc_server.network_interface[0].network_ip
+    manager_ip    = google_compute_instance.soc_server.network_interface[0].network_ip
+    wazuh_version = var.wazuh_version
   })
 
   depends_on = [google_compute_router_nat.nat]

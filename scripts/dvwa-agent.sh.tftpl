@@ -16,8 +16,11 @@ if [ ! -f /var/ossec/etc/ossec.conf ]; then
   echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
     >/etc/apt/sources.list.d/wazuh.list
   apt-get -o DPkg::Lock::Timeout=180 update -y
+  # Pin the agent to the manager's line (${wazuh_version}.x) — the manager rejects
+  # any agent newer than itself. Picks the highest matching patch in the repo.
+  AGENT_VER=$(apt-cache madison wazuh-agent | awk '{print $3}' | grep "^${wazuh_version}\." | head -1)
   # WAZUH_MANAGER points the agent at the manager for auto-enrollment (port 1515).
-  WAZUH_MANAGER="${manager_ip}" apt-get -o DPkg::Lock::Timeout=180 install -y wazuh-agent
+  WAZUH_MANAGER="${manager_ip}" apt-get -o DPkg::Lock::Timeout=180 install -y "wazuh-agent=$AGENT_VER"
   systemctl daemon-reload
   systemctl enable --now wazuh-agent
 fi
