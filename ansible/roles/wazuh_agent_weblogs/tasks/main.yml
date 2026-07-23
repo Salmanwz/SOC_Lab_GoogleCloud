@@ -1,0 +1,30 @@
+---
+- name: Ensure host directory for DVWA apache logs
+  ansible.builtin.file:
+    path: /var/log/dvwa
+    state: directory
+    mode: "0755"
+
+# The running container has no log bind-mount, and you can't add a volume to a
+# live container — so recreate it with apache's log dir mapped to the host.
+- name: Recreate DVWA with apache logs bind-mounted to the host
+  ansible.builtin.shell: |
+    docker rm -f dvwa || true
+    docker run -d --name dvwa --restart unless-stopped \
+      -p 80:80 -v /var/log/dvwa:/var/log/apache2 \
+      vulnerables/web-dvwa
+  args:
+    executable: /bin/bash
+  changed_when: true
+
+- name: Point the Wazuh agent at the DVWA access log
+  ansible.builtin.blockinfile:
+    path: /var/ossec/etc/ossec.conf
+    marker: "<!-- {mark} ANSIBLE: dvwa weblogs -->"
+    insertbefore: "</ossec_config>"
+    block: |
+      <localfile>
+        <log_format>apache</log_format>
+        <location>/var/log/dvwa/access.log</location>
+      </localfile>
+  notify: Restart wazuh-agent

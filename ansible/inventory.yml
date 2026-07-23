@@ -1,0 +1,19 @@
+all:
+  vars:
+    # OS Login username — get it with:
+    #   gcloud compute os-login describe-profile --format="value(posixAccounts[0].username)"
+    ansible_user: "swajidjobs_gmail_com"
+    # Key gcloud created the first time you ran `gcloud compute ssh`.
+    ansible_ssh_private_key_file: "~/.ssh/google_compute_engine"
+    ansible_python_interpreter: /usr/bin/python3
+  children:
+    wazuh_manager:
+      hosts:
+        soc-server:
+          # verify: tofu output soc_server_internal_ip
+          ansible_host: 10.10.10.3
+    web_targets:
+      hosts:
+        dvwa:
+          # from: tofu output dvwa_internal_ip
+          ansible_host: "10.10.20.3"

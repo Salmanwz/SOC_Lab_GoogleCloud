@@ -1,0 +1,9 @@
+---
+- name: Deploy custom web-attack rules
+  ansible.builtin.copy:
+    src: local_rules.xml
+    dest: /var/ossec/etc/rules/local_rules.xml
+    owner: wazuh
+    group: wazuh
+    mode: "0640"
+  notify: Restart wazuh-manager

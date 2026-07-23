@@ -1,0 +1,12 @@
+<group name="local,web,attack,">
+  <!-- Fires when a built-in apache/web rule already tagged the event "web"
+       and the requested URL carries a common attack signature. -->
+  <rule id="100100" level="10">
+    <if_group>web</if_group>
+    <url type="pcre2">(?i)(union\s+select|information_schema|\.\./|/etc/passwd|&lt;script)</url>
+    <description>Possible web attack (SQLi/LFI/XSS) against DVWA</description>
+    <mitre>
+      <id>T1190</id>
+    </mitre>
+  </rule>
+</group>

@@ -1,0 +1,12 @@
+---
+- name: Ship DVWA web logs into Wazuh
+  hosts: web_targets
+  become: true
+  roles:
+    - wazuh_agent_weblogs
+
+- name: Deploy custom detection rules on the manager
+  hosts: wazuh_manager
+  become: true
+  roles:
+    - wazuh_manager_rules
