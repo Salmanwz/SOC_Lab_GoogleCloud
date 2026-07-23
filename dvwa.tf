@@ -7,6 +7,7 @@ resource "google_compute_instance" "dvwa" {
   name         = "${var.name_prefix}-dvwa"
   machine_type = "e2-small"
   zone         = var.zone
+  tags         = ["via-edge"] # route this host's internet traffic through the edge NVA
 
   boot_disk {
     initialize_params {

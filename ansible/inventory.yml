@@ -16,4 +16,4 @@ all:
       hosts:
         dvwa:
           # from: tofu output dvwa_internal_ip
-          ansible_host: "10.10.20.3"
+          ansible_host: "10.10.20.2"

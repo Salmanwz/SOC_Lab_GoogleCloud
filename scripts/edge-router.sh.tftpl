@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
+
+# Forward traffic between interfaces (this box is a router/NVA).
+sysctl -w net.ipv4.ip_forward=1
+echo 'net.ipv4.ip_forward = 1' >/etc/sysctl.d/99-edge.conf
+
+apt-get -o DPkg::Lock::Timeout=180 update -y
+apt-get -o DPkg::Lock::Timeout=180 install -y nftables
+
+# Primary (WAN) interface on GCE Ubuntu is typically ens4 — detect it.
+IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -1)
+
+cat >/etc/nftables.conf <<EOF
+#!/usr/sbin/nft -f
+flush ruleset
+
+table ip nat {
+  chain postrouting {
+    type nat hook postrouting priority srcnat; policy accept;
+    # SNAT the targets subnet to the internet through this router.
+    ip saddr ${targets_cidr} oifname "$IFACE" masquerade
+  }
+}
+EOF
+
+systemctl enable nftables
+nft -f /etc/nftables.conf
