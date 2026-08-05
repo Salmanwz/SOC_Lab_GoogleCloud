@@ -1,0 +1,17 @@
+#!/usr/sbin/nft -f
+flush ruleset
+
+table ip nat {
+  chain prerouting {
+    type nat hook prerouting priority dstnat; policy accept;
+    # Publish DVWA:80 to the internet via the edge's public IP.
+    # No SNAT on this flow, so DVWA (and Wazuh) see the REAL client IP.
+    iifname "{{ ansible_default_ipv4.interface }}" tcp dport 80 dnat to {{ hostvars['dvwa'].ansible_host }}:80
+  }
+
+  chain postrouting {
+    type nat hook postrouting priority srcnat; policy accept;
+    # SNAT the targets subnet outbound to the internet (egress).
+    ip saddr {{ targets_cidr }} oifname "{{ ansible_default_ipv4.interface }}" masquerade
+  }
+}

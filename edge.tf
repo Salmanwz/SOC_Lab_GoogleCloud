@@ -4,6 +4,27 @@ variable "edge_machine_type" {
   default     = "e2-small"
 }
 
+variable "admin_source_cidr" {
+  description = "Your public IP as a /32 — the ONLY source allowed to reach the published DVWA. From: curl -s ifconfig.me"
+  type        = string
+}
+
+# Publish DVWA (port 80) on the edge's public IP, but only to your own IP.
+# DVWA is deliberately vulnerable, so this /32 lock is the AUP safeguard.
+resource "google_compute_firewall" "allow_edge_web" {
+  name          = "${var.name_prefix}-allow-edge-web"
+  network       = google_compute_network.vpc.id
+  direction     = "INGRESS"
+  priority      = 1000
+  source_ranges = [var.admin_source_cidr]
+  target_tags   = ["edge-nva"]
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+}
+
 resource "google_service_account" "edge" {
   account_id   = "${var.name_prefix}-edge"
   display_name = "SOC lab edge router / NVA"

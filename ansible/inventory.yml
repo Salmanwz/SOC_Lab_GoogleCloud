@@ -17,3 +17,8 @@ all:
         dvwa:
           # from: tofu output dvwa_internal_ip
           ansible_host: "10.10.20.2"
+    edge:
+      hosts:
+        edge-router:
+          # from: tofu output edge_internal_ip
+          ansible_host: "10.10.30.2"

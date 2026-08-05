@@ -10,3 +10,9 @@
   become: true
   roles:
     - wazuh_manager_rules
+
+- name: Configure the edge router (nftables — publish DVWA)
+  hosts: edge
+  become: true
+  roles:
+    - edge_nftables

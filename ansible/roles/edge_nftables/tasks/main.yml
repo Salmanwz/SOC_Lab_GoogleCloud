@@ -1,0 +1,13 @@
+---
+- name: Deploy nftables ruleset (masquerade + DVWA publish)
+  ansible.builtin.template:
+    src: nftables.conf.j2
+    dest: /etc/nftables.conf
+    mode: "0755"
+  notify: Reload nftables
+
+- name: Ensure nftables is enabled and running
+  ansible.builtin.service:
+    name: nftables
+    enabled: true
+    state: started
